@@ -81,6 +81,10 @@ func (m Mail2Most) parseHTML(b []byte, profile int) ([]byte, error) {
 	ow := regexp.MustCompile(`On .*? wrote:.*`)
 	b = ow.ReplaceAll(b, []byte(""))
 
+	// Attempt to remove replies beginning with "On X Y Z, <user@email> said:". (Korean)
+	ow_k := regexp.MustCompile(`.*?, .*?님이 작성:.*`)
+	b = ow_k.ReplaceAll(b, []byte(""))
+
 	// Remove all <!--[MSO COMMENTS]--> and their contents. These tags come from Outlook's default mail editor.
 	MC := regexp.MustCompile(`<!--\[if.*?endif]-->`)
 	b = MC.ReplaceAll(b, []byte(""))
@@ -167,6 +171,10 @@ func (m Mail2Most) parseHTML(b []byte, profile int) ([]byte, error) {
 	// typical on iOS, Samsung, and Blackberry devices. If the user has a custom signature, this won't help.
 	sf := regexp.MustCompile(`(Sent [Ff]rom|Sent via).*`)
 	b = sf.ReplaceAll(b, []byte(""))
+
+	// Thunderbird signature
+	ts := regexp.MustCompile(`-- ?\n.*`)
+	b = ts.ReplaceAll(b, []byte(""))
 
 	return b, nil
 }
