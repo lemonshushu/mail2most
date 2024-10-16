@@ -5,15 +5,19 @@ on:
     - cron: "45 14 * * *" # need to use UTC time here
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   push_to_registry:
-    name: Push Docker image to GHCR
+    name: Push Docker image to GitHub Container Registry
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Setup Go ${{ matrix.go-version }}
+      - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.22.x'
@@ -31,21 +35,21 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.GITHUB_ACTOR }}
-          password: ${{ secrets.GITHUB_TOKEN }}
           registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository }}/mail2most
+          images: ghcr.io/${{ github.repository_owner }}/mail2most
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        uses: docker/build-push-action@v5
         with:
           context: docker/
           file: docker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/mail2most:latest
+          tags: ghcr.io/${{ github.repository_owner }}/mail2most:latest
           labels: ${{ steps.meta.outputs.labels }}
