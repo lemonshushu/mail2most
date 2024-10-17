@@ -173,7 +173,7 @@ func (m Mail2Most) parseHTML(b []byte, profile int) ([]byte, error) {
 	b = sf.ReplaceAll(b, []byte(""))
 
 	// Thunderbird signature
-	ts := regexp.MustCompile(`-- ?\n.*`)
+	ts := regexp.MustCompile(`-- ?$`)
 	b = ts.ReplaceAll(b, []byte(""))
 
 	return b, nil
